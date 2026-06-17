@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: biomedical_backend
+    volumes:
+      - chroma_data:/data/chroma_db
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - VECTOR_DB_DIR=/data/chroma_db
+      - LOG_LEVEL=INFO
+    ports:
+      - "8000:8000"
+    networks:
+      - rag_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: biomedical_frontend
+    environment:
+      - BACKEND_URL=http://backend:8000/api/v1
+    ports:
+      - "8501:8501"
+    networks:
+      - rag_network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  rag_network:
+    driver: bridge
+
+volumes:
+  chroma_data:
+    driver: local

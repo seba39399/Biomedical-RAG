@@ -1,0 +1,29 @@
+[project]
+name = "biomedical-rag-ops"
+version = "0.1.0"
+description = "MVP RAG para auditoría de regulaciones biomédicas con enfoque MLOps"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "pydantic-settings>=2.2.1",
+    "streamlit>=1.32.0",
+    "langchain>=0.1.12",
+    "langchain-community>=0.0.28",
+    "chromadb>=0.4.24",
+    "pypdf>=4.1.0",
+    "requests>=2.31.0",
+    "langchain-openai>=0.1.0",
+    "langchain-groq>=1.1.3",
+    "langchain-huggingface>=1.2.2",
+    "langchain-text-splitters>=1.1.2",
+    "langchain-core>=1.4.6",
+    "sentence-transformers>=5.6.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.1.1",
+    "black>=24.2.0",
+]

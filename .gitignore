@@ -1,0 +1,15 @@
+# Entornos virtuales
+.venv/
+.uv/
+__pycache__/
+*.pyc
+
+# Base de datos vectorial local (para que no subas gigas de vectores)
+chroma_db_local/
+
+# Archivos de entorno y llaves (Por seguridad, NUNCA subas tu API Key a GitHub)
+.env
+
+# Temporales de OS
+.DS_Store
+Thumbs.db
