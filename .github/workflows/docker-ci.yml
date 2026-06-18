@@ -1,41 +1,48 @@
-name: 🚀 Docker Build Check (CI)
+name: 🚀 Docker Build and Push to DockerHub (CD)
 
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
-  build-containers:
-    name: Compilar Imágenes Docker en la Nube
+  build-and-push:
+    name: Compilar y Subir Imágenes a DockerHub
     runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout del código
         uses: actions/checkout@v4
 
+      # Paso Clave: Iniciar sesión en DockerHub usando los secretos seguros
+      - name: 🔑 Iniciar sesión en DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets::DOCKERHUB_USERNAME }}
+          password: ${{ secrets::DOCKERHUB_TOKEN }}
+
       - name: ⚙️ Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Paso Backend: Cambiamos context a la raíz (.) y apuntamos al archivo específico
-      - name: 📦 Compilar Docker Imagen Backend (FastAPI)
+      # Paso Backend: Compila y sube a DockerHub
+      - name: 📦 Build & Push Backend (FastAPI)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./backend/Dockerfile
-          push: false
-          tags: biomedical-rag-backend:latest
+          push: true # <--- ACTIVADO: Ahora sí se guardan en la nube
+          # REEMPLAZA "tu_usuario_de_dockerhub" con tu usuario real (ej: seba39399)
+          tags: seba39399/biomedical-rag-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Paso Frontend: Cambiamos context a la raíz (.) y apuntamos al archivo específico
-      - name: 📦 Compilar Docker Imagen Frontend (Streamlit)
+      # Paso Frontend: Compila y sube a DockerHub
+      - name: 📦 Build & Push Frontend (Streamlit)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./frontend/Dockerfile
-          push: false
-          tags: biomedical-rag-frontend:latest
+          push: true # <--- ACTIVADO
+          # REEMPLAZA "tu_usuario_de_dockerhub" con tu usuario real (ej: seba39399)
+          tags: seba39399/biomedical-rag-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
