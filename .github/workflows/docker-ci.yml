@@ -1,6 +1,5 @@
-name: Docker Build Check (CI)
+name: 🚀 Docker Build Check (CI)
 
-# El flujo se activará automáticamente cada vez que hagas un push a la rama main
 on:
   push:
     branches: ["main"]
@@ -10,35 +9,33 @@ on:
 jobs:
   build-containers:
     name: Compilar Imágenes Docker en la Nube
-    runs-on: ubuntu-latest # Servidor Linux gratuito que nos presta GitHub
+    runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Descargar el código de tu repositorio en la máquina de GitHub
-      - name: Checkout del código
+      - name: ⬇️ Checkout del código
         uses: actions/checkout@v4
 
-      # Paso 2: Configurar el motor de Docker para compilaciones avanzadas
-      - name: Configurar Docker Buildx
+      - name: ⚙️ Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Paso 3: Intentar compilar el contenedor del Backend
-      - name: Compilar Docker Imagen Backend (FastAPI)
+      # Paso Backend: Cambiamos context a la raíz (.) y apuntamos al archivo específico
+      - name: 📦 Compilar Docker Imagen Backend (FastAPI)
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: .
           file: ./backend/Dockerfile
-          push: false # Por ahora solo queremos verificar que compila sin errores
+          push: false
           tags: biomedical-rag-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Paso 4: Intentar compilar el contenedor del Frontend
-      - name: Compilar Docker Imagen Frontend (Streamlit)
+      # Paso Frontend: Cambiamos context a la raíz (.) y apuntamos al archivo específico
+      - name: 📦 Compilar Docker Imagen Frontend (Streamlit)
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: .
           file: ./frontend/Dockerfile
-          push: false # Solo verificación de calidad de código
+          push: false
           tags: biomedical-rag-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

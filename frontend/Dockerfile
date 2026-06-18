@@ -23,5 +23,4 @@ COPY app.py /app/app.py
 
 EXPOSE 8501
 
-# Configuración básica de Streamlit para producción en contenedores
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

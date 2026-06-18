@@ -5,7 +5,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Copiar archivos de configuración de dependencias
+# OJO AQUÍ: Modificamos para copiar la configuración desde la raíz del contexto
 COPY pyproject.toml uv.lock ./
 
 # Sincronizar dependencias ignorando el modo desarrollo
@@ -21,12 +21,11 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Copiar el código fuente del backend
+# Copiar el código fuente del backend (ahora entra directo desde el contexto)
 COPY src/ /app/src/
 
 WORKDIR /app/src
 
 EXPOSE 8000
 
-# Comando de arranque optimizado para contenedores (sin --reload en producción)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
