@@ -1,6 +1,6 @@
 # --- Stage 1: Constructor / Builder ---
-# Cambiamos alpine por debian-slim
-FROM ghcr.io/astral-sh/uv:python3.12-slim AS builder
+# CORRECCIÓN: El tag oficial exacto de Astral para Debian Slim
+FROM ghcr.io/astral-sh/uv:python3.12-debian-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
@@ -14,7 +14,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project
 
 # --- Stage 2: Imagen Final de Producción ---
-# Cambiamos alpine por slim para compatibilidad con binarios como onnxruntime
 FROM python:3.12-slim
 
 WORKDIR /app

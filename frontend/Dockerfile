@@ -1,5 +1,6 @@
 # --- Stage 1: Constructor / Builder ---
-FROM ghcr.io/astral-sh/uv:python3.12-slim AS builder
+# CORRECCIÓN: El tag oficial exacto de Astral para Debian Slim
+FROM ghcr.io/astral-sh/uv:python3.12-debian-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
