@@ -24,6 +24,7 @@ rag_engine = BiomedicalRAGEngine()
 class QueryRequest(BaseModel):
     """Esquema de validación de entrada para las consultas al chatbot."""
     question: str
+    language: str = "ES"
 
 
 class QueryResponse(BaseModel):
@@ -72,9 +73,10 @@ async def ingest_document(file: UploadFile = File(...)):
 
 @app.post(f"{settings.API_V1_STR}/query", response_model=QueryResponse)
 async def query_rag(request: QueryRequest):
-    """Endpoint asíncrono para interactuar con el chatbot RAG."""
+    """Endpoint asíncrono para interactuar con el motor RAG."""
     try:
-        answer = rag_engine.query(request.question)
+        # Pasamos tanto la pregunta como el idioma al motor RAG
+        answer = rag_engine.query(request.question, request.language)
         return QueryResponse(answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en inferencia del LLM: {str(e)}")
