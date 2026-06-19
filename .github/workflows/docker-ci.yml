@@ -13,7 +13,6 @@ jobs:
       - name: ⬇️ Checkout del código
         uses: actions/checkout@v4
 
-      # CORRECCIÓN AQUÍ: Cambiados los :: por . para la sintaxis correcta de GitHub
       - name: 🔑 Iniciar sesión en DockerHub
         uses: docker/login-action@v3
         with:

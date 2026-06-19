@@ -1,7 +1,7 @@
 [project]
 name = "biomedical-rag-ops"
 version = "0.1.0"
-description = "MVP RAG para auditoría de regulaciones biomédicas con enfoque MLOps"
+description = "RAG MVP for biomedical regulatory auditing with an MLOps approach"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

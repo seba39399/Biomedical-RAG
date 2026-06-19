@@ -1,4 +1,4 @@
-"""Módulo central del motor RAG utilizando Groq y Embeddings Locales."""
+"""Core RAG engine module using Groq and local embeddings."""
 
 import os
 from typing import Dict, Any
@@ -14,10 +14,10 @@ from config import settings
 
 
 class BiomedicalRAGEngine:
-    """Clase controladora para las operaciones RAG optimizadas con Groq."""
+    """Class for managing RAG operations optimized with Groq."""
 
     def __init__(self) -> None:
-        """Inicializa los componentes de IA gratuitos y la VectorDB."""
+        """Initializes the AI components and the VectorDB."""
         self.embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
@@ -28,7 +28,6 @@ class BiomedicalRAGEngine:
             collection_name="biomedical_docs"
         )
         
-        # El modelo vigente y ultra rápido de Groq
         self.llm = ChatGroq(
             temperature=0.1,
             groq_api_key=settings.GROQ_API_KEY,
@@ -36,7 +35,7 @@ class BiomedicalRAGEngine:
         )
 
     def ingest_pdf(self, file_path: str) -> Dict[str, Any]:
-        """Procesa, segmenta e ingresa un documento PDF en la base de datos vectorial."""
+        """Processes, segments, and ingests a PDF document into the vector database."""
         loader = PyPDFLoader(file_path)
         documents = loader.load()
         
@@ -55,17 +54,16 @@ class BiomedicalRAGEngine:
         }
 
     def _format_docs(self, docs) -> str:
-        """Une el contenido de los documentos recuperados en una sola cadena de texto."""
+        """Combine the content of the retrieved documents into a single text string."""
         return "\n\n".join(doc.page_content for doc in docs)
 
     def query(self, question: str, language: str = "ES") -> str:
-        """Realiza una búsqueda de similitud y genera una respuesta fundamentada con Groq.
+        """Perform a similarity search and generate a substantiated response using Groq.
         
-        Soporta respuestas adaptativas según el idioma seleccionado de la UI.
+        Supports adaptive responses based on the selected UI language.
         """
         retriever = self.vector_store.as_retriever(search_kwargs={"k": 4})
         
-        # Prompt del sistema dinámico según el idioma seleccionado en la interfaz
         if language == "ES":
             system_prompt = (
                 "Eres un asistente experto en auditoría de dispositivos médicos y regulaciones biomédicas.\n"
@@ -90,7 +88,7 @@ class BiomedicalRAGEngine:
             ("human", "{question}"),
         ])
         
-        # Pipeline LCEL determinista
+        # Pipeline LCEL 
         rag_chain = (
             {"context": retriever | self._format_docs, "question": RunnablePassthrough()}
             | prompt

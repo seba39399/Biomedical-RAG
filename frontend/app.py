@@ -1,14 +1,13 @@
-"""Aplicación Frontend de Streamlit para el portafolio de Ingeniería Biomédica.
+"""Streamlit frontend application for the Biomedical Engineering RAG.
 
-Soporta internacionalización (Español / Inglés) de toda la interfaz gráfica,
-incluyendo gestión de infraestructura, stack tecnológico y limpieza de historial.
+Supports internationalization (Spanish/English) of the entire graphical interface,
+including infrastructure management, the technology stack, and history cleanup.
 """
 
 import os
 import streamlit as st
 import requests
 
-# Configuración de URL del backend
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1")
 
 st.set_page_config(
@@ -17,7 +16,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- TRADUCCIÓN COMPLETA DE LA INTERFAZ (i18n) ---
+# --- UI translated (i18n) ---
 I18N = {
     "ES": {
         "title": "🧬 Asistente RAG para Auditoría y Regulación Biomédica",
@@ -65,18 +64,15 @@ I18N = {
     }
 }
 
-# --- BARRA LATERAL: Selector de idioma y control de la App ---
+# --- SIDEBAR ---
 with st.sidebar:
-    # 1. Inicializar la variable en la sesión si no existe
     if "lang" not in st.session_state:
         st.session_state.lang = "ES"
 
-    # Determinar el índice actual para que el componente visual no se reinicie
     current_index = 0 if st.session_state.lang == "ES" else 1
 
     st.header(I18N["ES"]["sidebar_lang_header"] if st.session_state.lang == "ES" else I18N["EN"]["sidebar_lang_header"])
     
-    # 2. El selectbox ahora mantiene el estado real usando 'key' e 'index' sincronizados
     lang = st.selectbox(
         I18N["ES"]["sidebar_lang_label"] if st.session_state.lang == "ES" else I18N["EN"]["sidebar_lang_label"], 
         ["ES", "EN"], 
@@ -84,17 +80,15 @@ with st.sidebar:
         key="lang_selector"
     )
     
-    # Actualizar la sesión con el cambio del usuario
     st.session_state.lang = lang
     
-    # Asignamos los textos del diccionario activo
     text = I18N[st.session_state.lang]
     
-    # --- BOTÓN PARA LIMPIAR CHAT INTEGRADO ---
+    # --- CLEAN CHAT ---
     st.markdown(" ")
     if st.button(text["btn_clear"], use_container_width=True):
-        st.session_state.messages = []  # Vaciamos el historial de mensajes
-        st.rerun()                      # Forzamos el rediseño inmediato de la UI limpia
+        st.session_state.messages = []  
+        st.rerun()                     
         
     st.markdown("---")
     st.header(text["sidebar_header"])
@@ -119,19 +113,17 @@ with st.sidebar:
     st.markdown(f"### {text['stack_title']}")
     st.info(f"{text['stack_backend']}\n\n{text['stack_frontend']}\n\n{text['stack_vector']}\n\n{text['stack_orchestration']}\n\n{text['stack_infra']}")
 
-# --- PANEL CENTRAL DE CONVERSACIÓN ---
+# --- MAIN PANEL ---
 st.title(text["title"])
 st.caption(text["caption"])
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Dibujar el historial en pantalla
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de texto del chat
 if user_question := st.chat_input(text["chat_input_placeholder"]):
     with st.chat_message("user"):
         st.markdown(user_question)
@@ -140,7 +132,6 @@ if user_question := st.chat_input(text["chat_input_placeholder"]):
     with st.chat_message("assistant"):
         with st.spinner(text["spinner_query"]):
             try:
-                # OJO AQUÍ: Enviamos explícitamente el idioma guardado en la sesión
                 payload = {"question": user_question, "language": st.session_state.lang}
                 response = requests.post(f"{BACKEND_URL}/query", json=payload)
                 

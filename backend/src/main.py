@@ -1,7 +1,7 @@
-"""Punto de entrada principal para la API REST de FastAPI.
+"""Main entry point for the FastAPI REST API.
 
-Expone los servicios de ingesta de documentos y consulta del chatbot RAG,
-manejando la persistencia temporal de archivos y las excepciones del sistema.
+It exposes the document ingestion and query services of the RAG chatbot,
+handling temporary file persistence and system exceptions.
 """
 
 import os
@@ -14,7 +14,7 @@ from config import settings
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="API para el análisis automatizado de normativas y cumplimiento biomédico."
+    description="API for the automated analysis of regulations and biomedical compliance."
 )
 
 # Inicialización única del motor RAG (Singleton conceptual en runtime)
@@ -22,61 +22,56 @@ rag_engine = BiomedicalRAGEngine()
 
 
 class QueryRequest(BaseModel):
-    """Esquema de validación de entrada para las consultas al chatbot."""
+    """Schema for validating input queries to the chatbot."""
     question: str
     language: str = "ES"
 
 
 class QueryResponse(BaseModel):
-    """Esquema de validación de salida para las respuestas del chatbot."""
+    """Schema for validating output responses from the chatbot."""
     answer: str
 
 
 @app.get("/")
 def read_root():
-    """Endpoint de verificación de salud del sistema (Health Check)."""
+    """Endpoint for system health check."""
     return {"status": "online", "application": settings.PROJECT_NAME}
 
 
 @app.post(f"{settings.API_V1_STR}/ingest")
 async def ingest_document(file: UploadFile = File(...)):
-    """Endpoint asíncrono para cargar y procesar regulaciones en PDF.
+    """Asynchronous endpoint for uploading and processing PDF regulations.
     
     Raises:
-        HTTPException: Si el archivo cargado no cumple con el formato PDF.
+        HTTPException: If the uploaded file does not comply with the PDF format.
     """
     if not file.filename.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Estructura de archivo inválida. Solo se admiten PDFs.")
+        raise HTTPException(status_code=400, detail="Invalid file structure. Only PDFs are accepted.")
     
-    # Creamos un directorio temporal seguro para procesar el archivo
     temp_dir = "/tmp/biomedical_ingest"
     os.makedirs(temp_dir, exist_ok=True)
     temp_file_path = os.path.join(temp_dir, file.filename)
     
     try:
-        # Guardamos el archivo binario en el disco temporal
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
-        # Ejecutamos el pipeline de extracción e indexación
         result = rag_engine.ingest_pdf(temp_file_path)
         return result
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fallo crítico en el pipeline MLOps: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Critical failure in the MLOps pipeline: {str(e)}")
         
     finally:
-        # Eliminación estricta del residuo de archivo para optimizar almacenamiento del contenedor
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
 
 @app.post(f"{settings.API_V1_STR}/query", response_model=QueryResponse)
 async def query_rag(request: QueryRequest):
-    """Endpoint asíncrono para interactuar con el motor RAG."""
+    """Asynchronous endpoint for interacting with the RAG engine."""
     try:
-        # Pasamos tanto la pregunta como el idioma al motor RAG
         answer = rag_engine.query(request.question, request.language)
         return QueryResponse(answer=answer)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en inferencia del LLM: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in LLM inference: {str(e)}")
