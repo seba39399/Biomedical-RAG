@@ -6,29 +6,32 @@ handling temporary file persistence and system exceptions.
 
 import os
 import shutil
-from fastapi import FastAPI, UploadFile, File, HTTPException
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
-from core.rag_engine import BiomedicalRAGEngine
+
 from config import settings
+from core.rag_engine import BiomedicalRAGEngine
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="API for the automated analysis of regulations and biomedical compliance."
+    description="API for the automated analysis of regulations and biomedical compliance.",
 )
 
-# Inicialización única del motor RAG (Singleton conceptual en runtime)
 rag_engine = BiomedicalRAGEngine()
 
 
 class QueryRequest(BaseModel):
     """Schema for validating input queries to the chatbot."""
+
     question: str
     language: str = "ES"
 
 
 class QueryResponse(BaseModel):
     """Schema for validating output responses from the chatbot."""
+
     answer: str
 
 
@@ -41,27 +44,31 @@ def read_root():
 @app.post(f"{settings.API_V1_STR}/ingest")
 async def ingest_document(file: UploadFile = File(...)):
     """Asynchronous endpoint for uploading and processing PDF regulations.
-    
+
     Raises:
         HTTPException: If the uploaded file does not comply with the PDF format.
     """
-    if not file.filename.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Invalid file structure. Only PDFs are accepted.")
-    
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(
+            status_code=400, detail="Invalid file structure. Only PDFs are accepted."
+        )
+
     temp_dir = "/tmp/biomedical_ingest"
     os.makedirs(temp_dir, exist_ok=True)
     temp_file_path = os.path.join(temp_dir, file.filename)
-    
+
     try:
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
+
         result = rag_engine.ingest_pdf(temp_file_path)
         return result
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Critical failure in the MLOps pipeline: {str(e)}")
-        
+        raise HTTPException(
+            status_code=500, detail=f"Critical failure in the MLOps pipeline: {str(e)}"
+        )
+
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)

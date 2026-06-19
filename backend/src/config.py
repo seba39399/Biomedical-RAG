@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,10 +12,10 @@ DOCKER_SECRET_GROQ = Path("/run/secrets/groq_api_key")
 
 class Settings(BaseSettings):
     """Container class for validated environment variables and secrets."""
-    
+
     PROJECT_NAME: str = "Biomedical RAG OPs"
     API_V1_STR: str = "/api/v1"
-    
+
     # Initialized as empty to prevent initial Pydantic parsing errors
     GROQ_API_KEY: str = ""
     VECTOR_DB_DIR: str = "./chroma_db_local"
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
     @classmethod
     def load_and_validate_api_key(cls, value: str) -> str:
         """Hierarchically resolves and validates the source of GROQ_API_KEY.
-        
+
         Load Priority:
         1. Docker Secrets (Production / Secure container deployment)
         2. Injected parameter / .env file (Local development with Compose)
@@ -52,9 +53,7 @@ class Settings(BaseSettings):
         )
 
     model_config = SettingsConfigDict(
-        env_file=".env", 
-        env_file_encoding="utf-8", 
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
 

@@ -5,16 +5,13 @@ including infrastructure management, the technology stack, and history cleanup.
 """
 
 import os
-import streamlit as st
+
 import requests
+import streamlit as st
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1")
 
-st.set_page_config(
-    page_title="Biomedical RAG Assistant",
-    page_icon="🧬",
-    layout="wide"
-)
+st.set_page_config(page_title="Biomedical RAG Assistant", page_icon="🧬", layout="wide")
 
 # --- UI translated (i18n) ---
 I18N = {
@@ -38,7 +35,7 @@ I18N = {
         "stack_frontend": "**Frontend:** Streamlit UI",
         "stack_vector": "📂 **VectorStore:** ChromaDB",
         "stack_orchestration": "🛠️ **Orquestación:** LangChain / uv Environment",
-        "stack_infra": "⚡ **Infraestructura LLM:** Groq LPU Cloud"
+        "stack_infra": "⚡ **Infraestructura LLM:** Groq LPU Cloud",
     },
     "EN": {
         "title": "🧬 Biomedical RAG Assistant for Regulatory Auditing",
@@ -60,8 +57,8 @@ I18N = {
         "stack_frontend": "**Frontend:** Streamlit UI",
         "stack_vector": "📂 **VectorStore:** ChromaDB",
         "stack_orchestration": "🛠️ **Orchestration:** LangChain / uv Environment",
-        "stack_infra": "⚡ **LLM Infrastructure:** Groq LPU Cloud"
-    }
+        "stack_infra": "⚡ **LLM Infrastructure:** Groq LPU Cloud",
+    },
 }
 
 # --- SIDEBAR ---
@@ -71,39 +68,55 @@ with st.sidebar:
 
     current_index = 0 if st.session_state.lang == "ES" else 1
 
-    st.header(I18N["ES"]["sidebar_lang_header"] if st.session_state.lang == "ES" else I18N["EN"]["sidebar_lang_header"])
-    
-    lang = st.selectbox(
-        I18N["ES"]["sidebar_lang_label"] if st.session_state.lang == "ES" else I18N["EN"]["sidebar_lang_label"], 
-        ["ES", "EN"], 
-        index=current_index,
-        key="lang_selector"
+    st.header(
+        I18N["ES"]["sidebar_lang_header"]
+        if st.session_state.lang == "ES"
+        else I18N["EN"]["sidebar_lang_header"]
     )
-    
+
+    lang = st.selectbox(
+        I18N["ES"]["sidebar_lang_label"]
+        if st.session_state.lang == "ES"
+        else I18N["EN"]["sidebar_lang_label"],
+        ["ES", "EN"],
+        index=current_index,
+        key="lang_selector",
+    )
+
     st.session_state.lang = lang
-    
+
     text = I18N[st.session_state.lang]
-    
+
     # --- CLEAN CHAT ---
     st.markdown(" ")
     if st.button(text["btn_clear"], use_container_width=True):
-        st.session_state.messages = []  
-        st.rerun()                     
-        
+        st.session_state.messages = []
+        st.rerun()
+
     st.markdown("---")
     st.header(text["sidebar_header"])
     st.subheader(text["sidebar_subheader"])
     uploaded_file = st.file_uploader(text["file_uploader_label"], type=["pdf"])
-    
+
     if uploaded_file is not None:
         if st.button(text["btn_ingest"]):
             with st.spinner(text["spinner_ingest"]):
-                files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
+                files = {
+                    "file": (
+                        uploaded_file.name,
+                        uploaded_file.getvalue(),
+                        "application/pdf",
+                    )
+                }
                 try:
                     response = requests.post(f"{BACKEND_URL}/ingest", files=files)
                     if response.status_code == 200:
                         data = response.json()
-                        st.success(text["success_ingest"].format(data['chunks_indexed'], data['filename']))
+                        st.success(
+                            text["success_ingest"].format(
+                                data["chunks_indexed"], data["filename"]
+                            )
+                        )
                     else:
                         st.error(f"Error: {response.json().get('detail')}")
                 except requests.exceptions.ConnectionError:
@@ -111,7 +124,9 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown(f"### {text['stack_title']}")
-    st.info(f"{text['stack_backend']}\n\n{text['stack_frontend']}\n\n{text['stack_vector']}\n\n{text['stack_orchestration']}\n\n{text['stack_infra']}")
+    st.info(
+        f"{text['stack_backend']}\n\n{text['stack_frontend']}\n\n{text['stack_vector']}\n\n{text['stack_orchestration']}\n\n{text['stack_infra']}"
+    )
 
 # --- MAIN PANEL ---
 st.title(text["title"])
@@ -134,11 +149,13 @@ if user_question := st.chat_input(text["chat_input_placeholder"]):
             try:
                 payload = {"question": user_question, "language": st.session_state.lang}
                 response = requests.post(f"{BACKEND_URL}/query", json=payload)
-                
+
                 if response.status_code == 200:
                     assistant_answer = response.json()["answer"]
                     st.markdown(assistant_answer)
-                    st.session_state.messages.append({"role": "assistant", "content": assistant_answer})
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": assistant_answer}
+                    )
                 else:
                     st.error(f"API Error: {response.json().get('detail')}")
             except requests.exceptions.ConnectionError:
