@@ -1,11 +1,17 @@
-import os
 from aws_cdk import (
     Stack,
+)
+from aws_cdk import (
     aws_ec2 as ec2,
+)
+from aws_cdk import (
     aws_ecs as ecs,
+)
+from aws_cdk import (
     aws_ecs_patterns as ecs_patterns,
 )
 from constructs import Construct
+
 
 class ChatbotRagStack(Stack):
 
