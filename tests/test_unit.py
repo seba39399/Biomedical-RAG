@@ -15,10 +15,6 @@ import config  # noqa: E402
 from config import Settings  # noqa: E402
 from core.rag_engine import BiomedicalRAGEngine  # noqa: E402
 
-# =====================================================================
-# 🗃️ SECCIÓN 1: PRUEBAS DE CONFIGURACIÓN Y SECRETOS
-# =====================================================================
-
 def test_settings_load_from_environment(monkeypatch):
     """1. Test that Settings correctly resolves GROQ_API_KEY from environment variables."""
     monkeypatch.setenv("GROQ_API_KEY", "gsk_test_env_key_12345")
@@ -40,11 +36,6 @@ def test_settings_default_project_metadata():
     """3. Test that the application maintains its immutable metadata defaults."""
     test_settings = Settings(GROQ_API_KEY="gsk_dummy")
     assert test_settings.PROJECT_NAME == "Biomedical RAG OPs"
-
-
-# =====================================================================
-# 🧬 SECCIÓN 2: PRUEBAS DEL MOTOR RAG Y FORMATEO
-# =====================================================================
 
 class MockDocument:
     """Mock class to simulate LangChain's Document structure without dependencies."""
@@ -75,11 +66,6 @@ def test_rag_engine_format_docs_empty():
     engine = BiomedicalRAGEngine.__new__(BiomedicalRAGEngine)
     formatted_result = engine._format_docs([])
     assert formatted_result == ""
-
-
-# =====================================================================
-# 📂 SECCIÓN 3: PRUEBAS DE INGESTA Y VALIDACIÓN DE ARCHIVOS
-# =====================================================================
 
 def test_file_validation_accepts_pdf():
     """6. Test that the ingestion pipeline permits valid PDF structures."""
