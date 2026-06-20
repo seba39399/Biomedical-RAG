@@ -15,6 +15,7 @@ import config  # noqa: E402
 from config import Settings  # noqa: E402
 from core.rag_engine import BiomedicalRAGEngine  # noqa: E402
 
+
 def test_settings_load_from_environment(monkeypatch):
     """1. Test that Settings correctly resolves GROQ_API_KEY from environment variables."""
     monkeypatch.setenv("GROQ_API_KEY", "gsk_test_env_key_12345")
