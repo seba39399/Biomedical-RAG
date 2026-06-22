@@ -21,7 +21,6 @@ FRONTEND_PATH = os.path.join(BASE_DIR, "frontend")
 
 
 class ChatbotRagStack(Stack):
-
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -33,7 +32,8 @@ class ChatbotRagStack(Stack):
 
         # 3. SERVICIO 1: Backend (FastAPI)
         self.backend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, "ChatbotRagBackendService",
+            self,
+            "ChatbotRagBackendService",
             cluster=cluster,
             cpu=512,
             memory_limit_mib=1024,
@@ -45,21 +45,22 @@ class ChatbotRagStack(Stack):
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
                     "GROQ_API_KEY": os.getenv("GROQ_API_KEY", ""),
-                }
+                },
             ),
-            public_load_balancer=True
+            public_load_balancer=True,
         )
 
         # Ajustamos el health check del backend para que apunte a la raíz "/"
-        self.backend_service.target_group.configure_health_check(
-            path="/"
-        )
+        self.backend_service.target_group.configure_health_check(path="/")
 
         # 4. SERVICIO 2: Frontend (Streamlit)
-        backend_url = f"http://{self.backend_service.load_balancer.load_balancer_dns_name}"
+        backend_url = (
+            f"http://{self.backend_service.load_balancer.load_balancer_dns_name}"
+        )
 
         self.frontend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, "ChatbotRagFrontendService",
+            self,
+            "ChatbotRagFrontendService",
             cluster=cluster,
             cpu=512,
             memory_limit_mib=1024,
@@ -68,10 +69,7 @@ class ChatbotRagStack(Stack):
                 # 🔥 Usamos la ruta absoluta dinámica calculada arriba
                 image=ecs.ContainerImage.from_asset(FRONTEND_PATH),
                 container_port=8501,
-                environment={
-                    "BACKEND_URL": backend_url,
-                    "API_URL": backend_url
-                }
+                environment={"BACKEND_URL": backend_url, "API_URL": backend_url},
             ),
-            public_load_balancer=True
+            public_load_balancer=True,
         )
