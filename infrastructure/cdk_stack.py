@@ -14,7 +14,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-# 📌 Calculamos la raíz real del proyecto
+# 📌 Calculamos la raíz real del proyecto (un nivel arriba de /infrastructure)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BACKEND_PATH = os.path.join(BASE_DIR, "backend")
 FRONTEND_PATH = os.path.join(BASE_DIR, "frontend")
@@ -45,7 +45,13 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=ecs.ContainerImage.from_asset(BACKEND_PATH),
+                # 🔥 SOLUCIÓN AQUÍ: Pasamos groq_key como build_arg para que el Dockerfile la capture
+                image=ecs.ContainerImage.from_asset(
+                    BACKEND_PATH,
+                    build_args={
+                        "GROQ_API_KEY": groq_key or ""
+                    }
+                ),
                 container_port=8000,
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
