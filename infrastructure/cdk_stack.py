@@ -26,7 +26,7 @@ class ChatbotRagStack(Stack):
         # 2. Clúster de ECS único
         cluster = ecs.Cluster(self, "ChatbotRagCluster", vpc=vpc)
 
-        # 3. SERVICIO 1: Backend (FastAPI) con su propio balanceador
+        # 3. SERVICIO 1: Backend (FastAPI) compitándose desde la carpeta local
         self.backend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self, "ChatbotRagBackendService",
             cluster=cluster,
@@ -34,7 +34,8 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=ecs.ContainerImage.from_registry("seba39399/biomedical-rag-backend:latest"),
+                # 🔥 CAMBIO CLAVE: Cambiamos registry por asset para que compile tu código actual
+                image=ecs.ContainerImage.from_asset("./backend"),
                 container_port=8000,
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
@@ -49,8 +50,8 @@ class ChatbotRagStack(Stack):
             path="/"
         )
 
-        # 4. SERVICIO 2: Frontend (Streamlit) con su propio balanceador público
-        # Obtenemos la URL del backend dinámicamente para pasársela al frontend
+        # 4. SERVICIO 2: Frontend (Streamlit)
+        # Obtenemos la URL del backend dinámicamente (limpia, sin /api/v1 al final)
         backend_url = f"http://{self.backend_service.load_balancer.load_balancer_dns_name}"
 
         self.frontend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -60,13 +61,14 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=ecs.ContainerImage.from_registry("seba39399/biomedical-rag-frontend:latest"),
+                # 🔥 CAMBIO CLAVE: Compila la carpeta frontend local con los requests corregidos
+                image=ecs.ContainerImage.from_asset("./frontend"),
                 container_port=8501,  # Puerto nativo en el que corre Streamlit
                 environment={
-                    # 🔥 Aquí ocurre la magia: El frontend de Streamlit sabrá a dónde pegarle
+                    # Aquí ocurre la magia: Streamlit unirá esto con /api/v1/query o /api/v1/ingest
                     "BACKEND_URL": backend_url,
                     "API_URL": backend_url
                 }
             ),
-            public_load_balancer=True  # Nos genera OTRA URL pública para que entres desde el cel o PC
+            public_load_balancer=True  # Nos genera OTRA URL pública para el cliente
         )
