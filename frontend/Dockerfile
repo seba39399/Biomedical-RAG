@@ -7,6 +7,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
+# Busca los archivos clonados dinámicamente en el contexto local
 COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -20,7 +21,9 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY frontend/app.py /app/app.py
+# 🚨 EL CAMBIO GANADOR: Quitamos el prefijo "frontend/" 
+# Ahora copia directamente app.py (o la estructura que manejes en el front)
+COPY app.py /app/app.py
 
 EXPOSE 8501
 
