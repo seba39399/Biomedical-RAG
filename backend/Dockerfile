@@ -7,7 +7,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Aquí uv encuentra el pyproject sin problema porque ya estamos dentro de /backend
+# 🚨 Buscamos los archivos de configuración en la raíz del contexto global
 COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -21,7 +21,8 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY src/ /app/src/
+# 🚨 Copiamos explícitamente desde la subcarpeta backend/src hacia la imagen
+COPY backend/src/ /app/src/
 
 WORKDIR /app/src
 
