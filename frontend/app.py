@@ -109,7 +109,9 @@ with st.sidebar:
                     )
                 }
                 try:
-                    response = requests.post(f"{BACKEND_URL}/api/v1/ingest", files=files)
+                    response = requests.post(
+                        f"{BACKEND_URL}/api/v1/ingest", files=files
+                    )
                     if response.status_code == 200:
                         data = response.json()
                         st.success(

@@ -38,6 +38,7 @@ def test_settings_default_project_metadata():
     test_settings = Settings(GROQ_API_KEY="gsk_dummy")
     assert test_settings.PROJECT_NAME == "Biomedical RAG OPs"
 
+
 class MockDocument:
     """Mock class to simulate LangChain's Document structure without dependencies."""
 
@@ -49,7 +50,7 @@ def test_rag_engine_format_docs_standard():
     """4. Test that _format_docs correctly flattens and joins multiple document chunks."""
     mock_docs = [
         MockDocument("ISO 13485 requires strict quality management systems."),
-        MockDocument("FDA Class III devices need Pre-Market Approval (PMA).")
+        MockDocument("FDA Class III devices need Pre-Market Approval (PMA)."),
     ]
 
     engine = BiomedicalRAGEngine.__new__(BiomedicalRAGEngine)
@@ -68,6 +69,7 @@ def test_rag_engine_format_docs_empty():
     formatted_result = engine._format_docs([])
     assert formatted_result == ""
 
+
 def test_file_validation_accepts_pdf():
     """6. Test that the ingestion pipeline permits valid PDF structures."""
     dummy_file = BytesIO(b"dummy pdf content")
@@ -82,8 +84,11 @@ def test_file_validation_rejects_malicious_extensions():
     mock_file = UploadFile(file=dummy_file, filename="malware_disguised.exe")
 
     with pytest.raises(HTTPException) as exc_info:
-        if not mock_file.filename.endswith('.pdf'):
-            raise HTTPException(status_code=400, detail="Invalid file structure. Only PDFs are accepted.")
+        if not mock_file.filename.endswith(".pdf"):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file structure. Only PDFs are accepted.",
+            )
 
     assert exc_info.value.status_code == 400
     assert "Only PDFs are accepted" in exc_info.value.detail

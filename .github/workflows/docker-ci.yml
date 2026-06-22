@@ -57,7 +57,8 @@ jobs:
       - name: Build & Push Backend (FastAPI)
         uses: docker/build-push-action@v5
         with:
-          context: .
+          # 🚨 CORRECCIÓN: El contexto ahora arranca dentro de la carpeta backend
+          context: ./backend
           file: ./backend/Dockerfile
           push: true
           tags: seba39399/biomedical-rag-backend:latest
@@ -67,7 +68,8 @@ jobs:
       - name: Build & Push Frontend (Streamlit)
         uses: docker/build-push-action@v5
         with:
-          context: .
+          # 🚨 CORRECCIÓN: El contexto ahora arranca dentro de la carpeta frontend
+          context: ./frontend
           file: ./frontend/Dockerfile
           push: true
           tags: seba39399/biomedical-rag-frontend:latest
@@ -86,7 +88,8 @@ jobs:
       - name: Set up Node.js (Para el CDK)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # 🚀 ACTUALIZACIÓN: Node 22 para evitar alertas de fin de ciclo de vida
+          node-version: "22"
 
       - name: Install AWS CDK
         run: npm install -g aws-cdk
