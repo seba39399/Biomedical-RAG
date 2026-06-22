@@ -90,7 +90,6 @@ jobs:
       - name: Code checkout
         uses: actions/checkout@v4
 
-      # 🚨 TRUCO DE INYECCIÓN LOCAL: Copiamos las dependencias para que AWS CDK las encuentre en su build context aislado
       - name: Sync dependencies for CDK assets
         run: |
           cp pyproject.toml uv.lock ./backend/
@@ -120,6 +119,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
           JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION: "1"
+          # 🚨 COMPORTAMIENTO ASEGURADO: Inyección explícita al scope del comando
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           cd infrastructure
