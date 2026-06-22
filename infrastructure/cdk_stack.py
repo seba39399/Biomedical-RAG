@@ -14,6 +14,11 @@ from aws_cdk import (
 )
 from constructs import Construct
 
+# 📌 AQUÍ ESTÁ EL TRUCO: Calculamos la raíz real del proyecto (un nivel arriba de /infrastructure)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND_PATH = os.path.join(BASE_DIR, "backend")
+FRONTEND_PATH = os.path.join(BASE_DIR, "frontend")
+
 
 class ChatbotRagStack(Stack):
 
@@ -26,7 +31,7 @@ class ChatbotRagStack(Stack):
         # 2. Clúster de ECS único
         cluster = ecs.Cluster(self, "ChatbotRagCluster", vpc=vpc)
 
-        # 3. SERVICIO 1: Backend (FastAPI) compitándose desde la carpeta local
+        # 3. SERVICIO 1: Backend (FastAPI)
         self.backend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self, "ChatbotRagBackendService",
             cluster=cluster,
@@ -34,8 +39,8 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                # 🔥 CAMBIO CLAVE: Cambiamos registry por asset para que compile tu código actual
-                image=ecs.ContainerImage.from_asset("./backend"),
+                # 🔥 Usamos la ruta absoluta dinámica calculada arriba
+                image=ecs.ContainerImage.from_asset(BACKEND_PATH),
                 container_port=8000,
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
@@ -51,7 +56,6 @@ class ChatbotRagStack(Stack):
         )
 
         # 4. SERVICIO 2: Frontend (Streamlit)
-        # Obtenemos la URL del backend dinámicamente (limpia, sin /api/v1 al final)
         backend_url = f"http://{self.backend_service.load_balancer.load_balancer_dns_name}"
 
         self.frontend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -61,14 +65,13 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                # 🔥 CAMBIO CLAVE: Compila la carpeta frontend local con los requests corregidos
-                image=ecs.ContainerImage.from_asset("./frontend"),
-                container_port=8501,  # Puerto nativo en el que corre Streamlit
+                # 🔥 Usamos la ruta absoluta dinámica calculada arriba
+                image=ecs.ContainerImage.from_asset(FRONTEND_PATH),
+                container_port=8501,
                 environment={
-                    # Aquí ocurre la magia: Streamlit unirá esto con /api/v1/query o /api/v1/ingest
                     "BACKEND_URL": backend_url,
                     "API_URL": backend_url
                 }
             ),
-            public_load_balancer=True  # Nos genera OTRA URL pública para el cliente
+            public_load_balancer=True
         )
