@@ -9,7 +9,7 @@ import os
 import requests
 import streamlit as st
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Biomedical RAG Assistant", page_icon="🧬", layout="wide")
 
@@ -109,7 +109,7 @@ with st.sidebar:
                     )
                 }
                 try:
-                    response = requests.post(f"{BACKEND_URL}/ingest", files=files)
+                    response = requests.post(f"{BACKEND_URL}/api/v1/ingest", files=files)
                     if response.status_code == 200:
                         data = response.json()
                         st.success(
@@ -148,7 +148,7 @@ if user_question := st.chat_input(text["chat_input_placeholder"]):
         with st.spinner(text["spinner_query"]):
             try:
                 payload = {"question": user_question, "language": st.session_state.lang}
-                response = requests.post(f"{BACKEND_URL}/query", json=payload)
+                response = requests.post(f"{BACKEND_URL}/api/v1/query", json=payload)
 
                 if response.status_code == 200:
                     assistant_answer = response.json()["answer"]
