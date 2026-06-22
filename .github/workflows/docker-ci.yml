@@ -45,6 +45,12 @@ jobs:
       - name: Code checkout
         uses: actions/checkout@v4
 
+      # 🚨 TRUCO DE INYECCIÓN LOCAL: Copiamos las dependencias a las subcarpetas para DockerHub
+      - name: Sync dependencies for sub-services
+        run: |
+          cp pyproject.toml uv.lock ./backend/
+          cp pyproject.toml uv.lock ./frontend/
+
       - name: DockerHub Login
         uses: docker/login-action@v3
         with:
@@ -57,8 +63,8 @@ jobs:
       - name: Build & Push Backend (FastAPI)
         uses: docker/build-push-action@v5
         with:
-          # 🚨 FIJADO: Contexto en la raíz para que lea uv.lock y pyproject.toml sin romperse
-          context: .
+          # Volvemos a aislar el contexto a su propia carpeta
+          context: ./backend
           file: ./backend/Dockerfile
           push: true
           tags: seba39399/biomedical-rag-backend:latest
@@ -68,8 +74,7 @@ jobs:
       - name: Build & Push Frontend (Streamlit)
         uses: docker/build-push-action@v5
         with:
-          # 🚨 FIJADO: Mismo comportamiento para el frontend
-          context: .
+          context: ./frontend
           file: ./frontend/Dockerfile
           push: true
           tags: seba39399/biomedical-rag-frontend:latest
@@ -84,6 +89,12 @@ jobs:
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
+
+      # 🚨 TRUCO DE INYECCIÓN LOCAL: Copiamos las dependencias para que AWS CDK las encuentre en su build context aislado
+      - name: Sync dependencies for CDK assets
+        run: |
+          cp pyproject.toml uv.lock ./backend/
+          cp pyproject.toml uv.lock ./frontend/
 
       - name: Set up Node.js (Para el CDK)
         uses: actions/setup-node@v4

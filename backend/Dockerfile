@@ -7,7 +7,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# 🚨 Buscamos los archivos de configuración en la raíz del contexto global
+# Al estar el contexto aislado en ./backend, esto leerá la copia local sin problemas
 COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -21,8 +21,8 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# 🚨 Copiamos explícitamente desde la subcarpeta backend/src hacia la imagen
-COPY backend/src/ /app/src/
+# Al estar el contexto aislado, la carpeta src/ está directamente en la raíz de compilación
+COPY src/ /app/src/
 
 WORKDIR /app/src
 
