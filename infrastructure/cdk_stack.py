@@ -75,10 +75,10 @@ class ChatbotRagStack(Stack):
                 image=ecs.ContainerImage.from_asset(FRONTEND_PATH),
                 container_port=8501,
                 environment={
-                    "BACKEND_URL": backend_url, 
+                    "BACKEND_URL": backend_url,
                     "API_URL": backend_url,
                     # 🚨 SOLUCIÓN AL CRITICAL FAILURE: Satisface la validación de Pydantic en el Frontend
-                    "GROQ_API_KEY": groq_key, 
+                    "GROQ_API_KEY": groq_key,
                 },
             ),
             public_load_balancer=True,
