@@ -12,25 +12,23 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     /bin/uv sync --frozen --no-dev --no-install-project
 
+
 # --- Stage 2: Final Image ---
 FROM python:3.12-slim
 
 WORKDIR /app
 
+# Traemos el entorno virtual limpio del builder
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# 🚨 Inyección perfecta de la API Key desde el CDK
-ARG GROQ_API_KEY
-ENV GROQ_API_KEY=$GROQ_API_KEY
-
-# Copia tu código fuente
+# Copiamos el código fuente de tu API
 COPY src/ /app/src/
 
-# 🔥 EL CAMBIO SEGURO: Nos paramos dentro de src para el entorno de ejecución
+# Nos paramos dentro de src para que Uvicorn encuentre los módulos sin enredos de PYTHONPATH
 WORKDIR /app/src
 
 EXPOSE 8000
 
-# Lanzamos la app directo llamando a main:app
+# Lanzamiento directo y óptimo
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

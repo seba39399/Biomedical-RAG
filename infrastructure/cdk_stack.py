@@ -24,10 +24,9 @@ class ChatbotRagStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Capturamos la API KEY asegurando que no llegue un string vacío de AWS
-        groq_key = os.getenv("GROQ_API_KEY")
+        # Capturamos la API KEY asegurando que se extraiga del host del pipeline
+        groq_key = os.getenv("GROQ_API_KEY", "")
         if not groq_key:
-            # Esto previene que despliegues una tarea rota en Fargate
             print("⚠️ WARNING: GROQ_API_KEY no detectada en las variables de entorno del host local.")
 
         # 1. Red virtual (VPC) compartida para ambos servicios
@@ -45,17 +44,13 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                # 🔥 SOLUCIÓN AQUÍ: Pasamos groq_key como build_arg para que el Dockerfile la capture
-                image=ecs.ContainerImage.from_asset(
-                    BACKEND_PATH,
-                    build_args={
-                        "GROQ_API_KEY": groq_key or ""
-                    }
-                ),
+                # Limpiamos el build_asset eliminando build_args propensos a fugas o strings corruptos
+                image=ecs.ContainerImage.from_asset(BACKEND_PATH),
                 container_port=8000,
+                # Inyección limpia directo a la memoria del contenedor en AWS Runtime
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
-                    "GROQ_API_KEY": groq_key or "",
+                    "GROQ_API_KEY": groq_key,
                 },
             ),
             public_load_balancer=True,
@@ -79,7 +74,12 @@ class ChatbotRagStack(Stack):
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_asset(FRONTEND_PATH),
                 container_port=8501,
-                environment={"BACKEND_URL": backend_url, "API_URL": backend_url},
+                environment={
+                    "BACKEND_URL": backend_url, 
+                    "API_URL": backend_url,
+                    # 🚨 SOLUCIÓN AL CRITICAL FAILURE: Satisface la validación de Pydantic en el Frontend
+                    "GROQ_API_KEY": groq_key, 
+                },
             ),
             public_load_balancer=True,
         )
