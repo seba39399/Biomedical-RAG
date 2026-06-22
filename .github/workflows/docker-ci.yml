@@ -107,6 +107,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
           JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION: "1"
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           cd infrastructure
           cdk deploy --require-approval never

@@ -1,3 +1,4 @@
+import os
 from aws_cdk import (
     Stack,
 )
@@ -32,11 +33,12 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,      # 1 GB de RAM
             desired_count=1,            # 1 sola instancia encendida
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                # 🔥 CAMBIO AQUÍ: Jalar directamente desde tu DockerHub público
+                # Jalar directamente desde tu DockerHub público
                 image=ecs.ContainerImage.from_registry("seba39399/biomedical-rag-backend:latest"),
                 container_port=8000,    # Puerto interno del FastAPI
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
+                    "GROQ_API_KEY": os.getenv("GROQ_API_KEY", ""),
                 }
             ),
             public_load_balancer=True   # Nos genera una URL pública

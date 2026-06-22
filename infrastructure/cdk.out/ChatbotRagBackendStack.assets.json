@@ -1,34 +1,20 @@
 {
   "version": "54.0.0",
   "files": {
-    "7db712e601fd9530783bdc591da256e91ad7c78b2c3335e9d015478c1f11d365": {
+    "bb3557921fd43a3a6760b835bdeff932c18a5f5b93193e99a7f9f6bd7094e838": {
       "displayName": "ChatbotRagBackendStack Template",
       "source": {
         "path": "ChatbotRagBackendStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "current_account-current_region-5a12546d": {
+        "current_account-current_region-6b6c9c2a": {
           "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
-          "objectKey": "7db712e601fd9530783bdc591da256e91ad7c78b2c3335e9d015478c1f11d365.json",
+          "objectKey": "bb3557921fd43a3a6760b835bdeff932c18a5f5b93193e99a7f9f6bd7094e838.json",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
         }
       }
     }
   },
-  "dockerImages": {
-    "d4866e8ab1417328f841ed38f13b7c130eba3658f4e6b60b4e48e765b8190a96": {
-      "displayName": "ChatbotRagFargateService/TaskDef/web/AssetImage",
-      "source": {
-        "directory": "asset.d4866e8ab1417328f841ed38f13b7c130eba3658f4e6b60b4e48e765b8190a96"
-      },
-      "destinations": {
-        "current_account-current_region-07da5700": {
-          "repositoryName": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}",
-          "imageTag": "d4866e8ab1417328f841ed38f13b7c130eba3658f4e6b60b4e48e765b8190a96",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-image-publishing-role-${AWS::AccountId}-${AWS::Region}"
-        }
-      }
-    }
-  }
+  "dockerImages": {}
 }

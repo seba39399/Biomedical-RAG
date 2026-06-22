@@ -622,9 +622,7 @@
        }
       ],
       "Essential": true,
-      "Image": {
-       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:d4866e8ab1417328f841ed38f13b7c130eba3658f4e6b60b4e48e765b8190a96"
-      },
+      "Image": "seba39399/biomedical-rag-backend:latest",
       "LogConfiguration": {
        "LogDriver": "awslogs",
        "Options": {
@@ -703,42 +701,6 @@
    "Properties": {
     "PolicyDocument": {
      "Statement": [
-      {
-       "Action": [
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-       ],
-       "Effect": "Allow",
-       "Resource": {
-        "Fn::Join": [
-         "",
-         [
-          "arn:",
-          {
-           "Ref": "AWS::Partition"
-          },
-          ":ecr:",
-          {
-           "Ref": "AWS::Region"
-          },
-          ":",
-          {
-           "Ref": "AWS::AccountId"
-          },
-          ":repository/",
-          {
-           "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}"
-          }
-         ]
-        ]
-       }
-      },
-      {
-       "Action": "ecr:GetAuthorizationToken",
-       "Effect": "Allow",
-       "Resource": "*"
-      },
       {
        "Action": [
         "logs:CreateLogStream",
@@ -880,7 +842,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31SXW/bMAz8LX1XtNYF9p6mXRGg6Ay76GtAK6zKRZEMkUoQGP7vg+R8rRv2xOPxKPEoVbr6fqtvb2DPM7PezBx1emgFzEbBnlcDmkoP771Riw//Xi9UnTpHpk2dR8ncBTUhCb5B5/DCX7g5czAEQsGfxRk8LescXkGeQXAPB1VH2oHg5eClF4wez4JpkmM2FwHzuUUvqkWTIsnhOYbUlxn+SzzZiMx/0Utf+FGhYT0sXGLBmFUn+AOiheyKN4/4QZ5Onr4ywQuQx3jFHXtbjDsy054mWK5b9SDZKut53zsyZVsvAdYP4MAbXH9pRwcsZFyAdVcU5O2u0sO/u4uJP/JrHbGgP2pO+Kr+BtGinBd5lY6KYKuHJkzvXmIdHJnyUBPK7uIKmFFYPwazwbjcgs2fAiXXdIN9YJIQDw/AqFywrIeXYM83nvA4qgY5pDit72eSPokqB7UClrwdVX2Qz+C/3eu7St9VN7+YaBaTF9qibqb4GyoCm1r3AgAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31RwW7CMAz9Fu4hg07anTGGkNBWtYgrcoMpHiGpEgeEqv771JYWxqad/Pzy7NjPkYxeRnI0gLMfqu1hqCmTZcqgDgLOflOiimS5LpSY7sw6noo4ZJpUGjKDXHM3lNjAuIJM442/cRPvrSJgsqYX12C2iOvwATwHxjNcROzoBIy3xgvD6Az2gnaSazZhBrU/omGRogqO+DJ3NhTNDP8Ss9yh97/ohWn4SqDyspzq4BldrergO7gc6q384Q13ZKjb6ZGxhoEMujvuWpuiO5FqfWph892mAK5X9XJSFJpU49bSwvYVNBiF24dy1OCZlLawzRoFmfwUyfLv6maJH/m9jjyjuWo6fPe+Apcj90bepZUgOMoyse3dmxhbTao5VIsqoW3uZbm0ed+iw1UlEvQ2uNaPz8BF4ErEF95b8/Qsx5EcR4MvTzR0wTAdUSZt/AY8p1HluwIAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "ChatbotRagBackendStack/CDKMetadata/Default"
