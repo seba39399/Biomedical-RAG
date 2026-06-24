@@ -108,7 +108,6 @@ jobs:
           python-version: "3.12"
 
       # 🚀 OPTIMIZACIÓN EN EL RUNNER: Sincronizamos el entorno virtual completo usando uv
-      # para evitar que el subproceso del CDK falle buscando librerías de Python.
       - name: Install Project Dependencies with uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -121,8 +120,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
           JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION: "1"
-          # 🔐 Limpio: Ya no exponemos secretos locales aquí. AWS los inyecta internamente.
+        # 🚨 CAMBIO REAL AQUÍ: Sin el 'cd infrastructure', ejecutamos plano desde la raíz
         run: |
-          cd infrastructure
-          # Le indicamos explícitamente a cdk que use nuestro entorno virtual de uv
           cdk deploy --require-approval never --app "uv run python infrastructure/app.py"
