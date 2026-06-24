@@ -6,49 +6,71 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=for-the-badge&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![Groq](https://img.shields.io/badge/LLM-Groq--Cloud-F55036?style=for-the-badge)](https://groq.com/)
+[![AWS](https://img.shields.io/badge/AWS-Cloud--Infrastructure-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![AWS CDK](https://img.shields.io/badge/AWS--CDK-IaC-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/cdk/)
 
-An enterprise-grade Retrieval-Augmented Generation (RAG) system engineered for automated compliance verification, regulatory auditing, and standards checking within the Biomedical Engineering domain.
+An enterprise-grade Retrieval-Augmented Generation (RAG) system engineered for automated compliance verification, regulatory auditing, and standards checking within the Biomedical Engineering domain. 
 
----
+This production-ready architecture bridges the gap between complex regulatory frameworks (such as FDA guidances, INVIMA decrees, and clinical equipment manuals) and engineering operations by leveraging cross-lingual LLM orchestration, semantic vector indexing, and isolated microservices deployed seamlessly via Infrastructure as Code (IaC).
 
-## Key Features
+### Key Capabilities
 
-- **Biomedical Context Awareness:** Seamless ingestion and vector indexing of complex medical standards and auditing documentation.
-- **Hybrid Configuration Management:** Production-ready Pydantic Settings layer supporting multi-source resolution (Docker Secrets, `.env` files, and local system environment fallbacks).
-- **Decoupled Architecture:** Microservices-based ecosystem separating the high-performance FastAPI backend from the intuitive Streamlit analytical frontend.
-- **Deterministic Isolation:** Containerized environment leveraging Docker Network security and cross-platform compatibility (WSL2 / Linux).
+* **Deterministic Knowledge Retrieval:** Implements an advanced splitting strategy using contextual-aware token text chunking alongside dense vector representations (`all-MiniLM-L6-v2`) to prevent LLM hallucinations on sensitive medical safety standards.
+* **Dual-Language Adaptive Prompting:** Orchestrates dynamic system-level instructions supporting seamless real-time switching between English and Spanish, forcing the underlying LLM to enforce strict technical taxonomy based on the ingested documentation.
+* **Cloud-Native Microservices Architecture:** Fully decoupled infrastructure utilizing a high-performance FastAPI asynchronous backend for processing vector retrieval queries, and an intuitive Streamlit frontend UI for auditor interactions.
+* **Production-Grade DevSecOps & IaC:** Outfitted with an automated CI/CD pipeline using GitHub Actions to compile multi-stage Docker builds, backed by absolute configuration security utilizing programmatic AWS Secrets Manager ingestion and AWS CDK automated resource provisioning (ECS Fargate Serverless Cluster).
 
 ---
 
 ## Project Architecture
 
 ```text
-chatbot-rag/
-├── src/
-│   ├── config.py          # Hierarchical configuration layer (Pydantic Settings)
-│   ├── main.py            # FastAPI Application & Endpoints core entrypoint
-│   └── core/
-│       └── rag_engine.py  # Biomedical RAG Engine & Embedding processing
-├── .env.example           # Public deployment environment blueprint
-├── docker-compose.yml     # Multi-container multi-service orchestrator
-└── pyproject.toml         # Dependency lock definition file
+CHATBOT-RAG/
+├── .github/
+│   └── workflows/
+│       └── docker-ci.yml      # CI/CD Pipeline (Automated multi-container building & testing)
+├── backend/                   # API Microservice Layer
+│   ├── src/
+│   │   ├── core/
+│   │   │   └── rag_engine.py  # Biomedical RAG Engine & Embedding processing logic
+│   │   ├── config.py          # Hierarchical configuration management (Pydantic Settings)
+│   │   └── main.py            # FastAPI Application & REST API Endpoints
+│   └── Dockerfile             # Production multi-stage Docker blueprint for Backend
+├── frontend/                  # User Interface Microservice Layer
+│   ├── app.py                 # Streamlit UI Application (Multi-language ES/EN support)
+│   └── Dockerfile             # Production Docker blueprint for Frontend
+├── infrastructure/            # Infrastructure as Code (IaC) Layer
+│   ├── cdk_stack.py           # AWS CDK Construct definitions for ECS Fargate & Secrets Manager
+│   ├── app.py                 # CDK Cloud Application entrypoint
+│   └── cdk.json               # AWS Cloud Development Kit configuration blueprint
+├── tests/                     # Automated Testing Suite (Pytest framework verification)
+├── docker-compose.yml         # Local orchestration file for multi-container development
+├── .env.example               # Public template for environment variables configuration
+└── .gitignore                 # Exclusion configuration for local caches, venv, and data directories
 ```
 
 ---
 
 ## Local Development & Quick Start
 
+Follow these steps to spin up the entire multi-container architecture locally for testing and development.
+
 ### Prerequisites
 
+Before running the application, ensure you have the following installed and configured:
 - **Docker Desktop** (with WSL2 backend enabled for Windows users).
-- **Groq API Key** (Get yours via the [Groq Cloud Console](https://console.groq.com/)).
+- **Groq API Key** (Obtain your credentials via the [Groq Cloud Console](https://console.groq.com/)).
 
-### 1. Environment Setup
+---
 
-Clone the repository template and instantiate your local configuration file.
+### Step-by-Step Setup
+
+#### 1. Environment Configuration
+
+Clone the public environment blueprint and instantiate your local configuration file:
 
 ```bash
-# Clone the template layout
+# Copy the environment template
 cp .env.example .env
 ```
 
@@ -80,15 +102,27 @@ Once the Uvicorn engine outputs state parameters successfully, navigate to the f
 - Analytical Frontend (Streamlit): http://localhost:8501
 - Core API Ecosystem (FastAPI Documentation): http://localhost:8000/docs
 
-## Production-Grade Security Configuration
+## Production-Grade Security & Configuration Hierarchy
 
-The platform architecture implements strict variable precedence handling inside config.py to prevent credential exposure in pipeline stages:
+The platform architecture implements a strict, hierarchical configuration layer powered by **Pydantic Settings**. This ensures decoupled environment management, strong type-safety, and absolute credential isolation across different pipeline execution stages, enforcing a clear variable precedence workflow:
 
-1. Docker Secrets Path (/run/secrets/groq_api_key): Checked first for infrastructure deployment setups.
+1. **Production Infrastructure (AWS Secrets Manager & ECS Fargate):** In cloud deployment contexts, secrets are never hardcoded or baked into Docker images. Credentials like `GROQ_API_KEY` are provisioned programmatically via Infrastructure as Code (AWS CDK) and injected directly into the running container's memory space at the task definition level.
+2. **Local Multi-Container Staging (`.env` Parsing via Docker Compose):** During local development and testing, configurations are resolved utilizing isolated environment files. Docker Compose orchestrates the injection of these variables securely into the backend container runtime without leaking host machine system details.
+3. **OS-Level Environment Fallbacks (`os.environ` Precedence):** Used primarily during automated continuous integration pipelines (GitHub Actions) or bare-metal unit testing suites, allowing runtime configurations to be overridden dynamically by the host system runner.
 
-2. Local Environment Context (.env parsing): Handled during container staging environments.
+> **Security Guarantee:** The `.env` file is explicitly blacklisted in `.gitignore`. The architecture is fully compliant with Twelve-Factor App methodologies, guaranteeing zero horizontal credential leakage across repository commits or production pipeline logs.
 
-3. OS Level Environment Fallbacks (os.getenv): Used during bare-metal infrastructure testing.
+## System Demostration (Video Walkthrough)
+
+Click on the image below to watch the full demonstration on Loom. In this video, I explain the cloud-native architecture, the FDA document ingestion process, and real-time semantic queries:
+
+[![Biomedical RAG Assistant Demo](https://cdn.loom.com/sessions/thumbnails/04250c05b8884e3ba5cf3213829333a7-with-play.gif)](https://www.loom.com/share/04250c05b8884e3ba5cf3213829333a7)
+
+*Note: The video showcases the production-ready integration between FastAPI, Streamlit UI, and semantic retrieval utilizing Llama 3.1 via Groq.*
+
+## Author
+
+Juan Sebastian Peña Valderrama, Biomedical Engineer and Software Developer.
 
 ## License
 
