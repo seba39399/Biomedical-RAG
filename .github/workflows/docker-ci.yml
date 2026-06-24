@@ -125,4 +125,4 @@ jobs:
         run: |
           cd infrastructure
           # Le indicamos explícitamente a cdk que use nuestro entorno virtual de uv
-          cdk deploy --require-approval never --app "uv run python app.py"
+          cdk deploy --require-approval never --app "uv run python infrastructure/app.py"
