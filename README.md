@@ -112,11 +112,11 @@ The platform architecture implements a strict, hierarchical configuration layer 
 
 > **Security Guarantee:** The `.env` file is explicitly blacklisted in `.gitignore`. The architecture is fully compliant with Twelve-Factor App methodologies, guaranteeing zero horizontal credential leakage across repository commits or production pipeline logs.
 
-## System Demostration (Video Walkthrough)
+## System Demonstration (Video Walkthrough)
 
 Click on the image below to watch the full demonstration on Loom. In this video, I explain the cloud-native architecture, the FDA document ingestion process, and real-time semantic queries:
 
-[![Biomedical RAG Assistant Demo](https://cdn.loom.com/sessions/thumbnails/04250c05b8884e3ba5cf3213829333a7-with-play.gif)](https://www.loom.com/share/04250c05b8884e3ba5cf3213829333a7)
+[![Biomedical RAG Assistant Demo](https://www.loom.com/api/video/04250c05b8884e3ba5cf3213829333a7/thumbnail.png)](https://www.loom.com/share/04250c05b8884e3ba5cf3213829333a7)
 
 *Note: The video showcases the production-ready integration between FastAPI, Streamlit UI, and semantic retrieval utilizing Llama 3.1 via Groq.*
 
