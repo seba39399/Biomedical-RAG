@@ -107,12 +107,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 🚀 OPTIMIZACIÓN EN EL RUNNER: Sincronizamos el entorno virtual completo usando uv
-      - name: Install Project Dependencies with uv
+      # 🚀 SOLUCIÓN AL ERROR DE MÓDULOS: Instalamos las librerías del CDK de forma global en el runner.
+      # Así el binario de 'cdk' las encuentra al compilar sin importar los entornos virtuales.
+      - name: Install CDK Dependencies on System Python
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv venv
-          uv sync
+          python -m pip install --upgrade pip
+          pip install aws-cdk-lib constructs
 
       - name: AWS CDK Deploy
         env:
@@ -120,6 +120,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
           JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION: "1"
-        # 🚨 CAMBIO REAL AQUÍ: Sin el 'cd infrastructure', ejecutamos plano desde la raíz
+        # Executamos usando el intérprete nativo de Python apuntando al archivo desde la raíz
         run: |
-          cdk deploy --require-approval never --app "uv run python infrastructure/app.py"
+          cdk deploy --require-approval never --app "python infrastructure/app.py"
