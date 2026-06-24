@@ -1,5 +1,7 @@
 import os
 
+# 🚨 IMPORTACIÓN CORRECTA PARA CDK V2:
+import aws_cdk.aws_ecs_patterns as ecs_patterns
 from aws_cdk import (
     Stack,
 )
@@ -10,11 +12,11 @@ from aws_cdk import (
     aws_ecs as ecs,
 )
 from aws_cdk import (
-    aws_ecs_patterns as ecs_patterns,
+    aws_secretsmanager as secretsmanager,
 )
 from constructs import Construct
 
-# 📌 Calculamos la raíz real del proyecto (un nivel arriba de /infrastructure)
+# 📌 Calculamos la raíz real del proyecto
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BACKEND_PATH = os.path.join(BASE_DIR, "backend")
 FRONTEND_PATH = os.path.join(BASE_DIR, "frontend")
@@ -24,16 +26,19 @@ class ChatbotRagStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Capturamos la API KEY asegurando que se extraiga del host del pipeline
-        groq_key = os.getenv("GROQ_API_KEY", "")
-        if not groq_key:
-            print("⚠️ WARNING: GROQ_API_KEY no detectada en las variables de entorno del host local.")
-
-        # 1. Red virtual (VPC) compartida para ambos servicios
+        # 1. Red virtual (VPC) y Clúster de ECS único
         vpc = ec2.Vpc(self, "ChatbotRagVpc", max_azs=2)
-
-        # 2. Clúster de ECS único
         cluster = ecs.Cluster(self, "ChatbotRagCluster", vpc=vpc)
+
+        # 2. TRAEMOS EL SECRETO: Buscamos en AWS el secreto que creaste en la web
+        groq_secret_aws = secretsmanager.Secret.from_secret_name_v2(
+            self, "ImportedGroqSecret", "prod/chatbot/groq"
+        )
+
+        # Mapeamos la clave interna del JSON del secreto para ECS Fargate
+        fargate_secret = ecs.Secret.from_secrets_manager(
+            groq_secret_aws, "GROQ_API_KEY"
+        )
 
         # 3. SERVICIO 1: Backend (FastAPI)
         self.backend_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -44,19 +49,18 @@ class ChatbotRagStack(Stack):
             memory_limit_mib=1024,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                # Limpiamos el build_asset eliminando build_args propensos a fugas o strings corruptos
                 image=ecs.ContainerImage.from_asset(BACKEND_PATH),
                 container_port=8000,
-                # Inyección limpia directo a la memoria del contenedor en AWS Runtime
                 environment={
                     "PROJECT_NAME": "Biomedical RAG OPs (AWS Live)",
-                    "GROQ_API_KEY": groq_key,
                 },
+                # 🚀 INYECCIÓN DINÁMICA: Fargate lee el secreto y lo monta en la RAM del contenedor
+                secrets={"GROQ_API_KEY": fargate_secret},
             ),
             public_load_balancer=True,
         )
 
-        # Ajustamos el health check del backend para que apunte a la raíz "/"
+        # Ajustamos el health check del backend
         self.backend_service.target_group.configure_health_check(path="/")
 
         # 4. SERVICIO 2: Frontend (Streamlit)
@@ -77,9 +81,9 @@ class ChatbotRagStack(Stack):
                 environment={
                     "BACKEND_URL": backend_url,
                     "API_URL": backend_url,
-                    # 🚨 SOLUCIÓN AL CRITICAL FAILURE: Satisface la validación de Pydantic en el Frontend
-                    "GROQ_API_KEY": groq_key,
                 },
+                # 🚨 Satisface la validación de Pydantic pasándole el mismo secreto seguro
+                secrets={"GROQ_API_KEY": fargate_secret},
             ),
             public_load_balancer=True,
         )

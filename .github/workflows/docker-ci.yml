@@ -63,7 +63,6 @@ jobs:
       - name: Build & Push Backend (FastAPI)
         uses: docker/build-push-action@v5
         with:
-          # Volvemos a aislar el contexto a su propia carpeta
           context: ./backend
           file: ./backend/Dockerfile
           push: true
@@ -108,10 +107,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Dependencies
+      # 🚀 OPTIMIZACIÓN EN EL RUNNER: Sincronizamos el entorno virtual completo usando uv
+      # para evitar que el subproceso del CDK falle buscando librerías de Python.
+      - name: Install Project Dependencies with uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv pip install --system aws-cdk-lib constructs
+          uv venv
+          uv sync
 
       - name: AWS CDK Deploy
         env:
@@ -119,8 +121,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
           JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION: "1"
-          # 🚨 COMPORTAMIENTO ASEGURADO: Inyección explícita al scope del comando
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          # 🔐 Limpio: Ya no exponemos secretos locales aquí. AWS los inyecta internamente.
         run: |
           cd infrastructure
-          cdk deploy --require-approval never
+          # Le indicamos explícitamente a cdk que use nuestro entorno virtual de uv
+          cdk deploy --require-approval never --app "uv run python app.py"
